@@ -1,0 +1,51 @@
+version: '3'
+services:
+  graph-node:
+    container_name: 'graph'
+    image: graphprotocol/graph-node:latest
+    depends_on:
+      - ipfs
+      - db
+    environment:
+      - postgres_host=http://host.docker.internal
+      - postgres_port=7432
+      - postgres_user=postgres
+      - postgres_pass=
+      - postgres_db=maxxgraph2
+      - ipfs=http://host.docker.internal:5001/
+      - ethereum=mainnet:https://mainrpc.maxxchain.org
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8020:8020"
+      - "8030:8030"
+      - "8040:8040"
+    volumes:
+      - ./data/subgraph:/data
+  ipfs:
+    container_name: 'ipfs'
+    image: ipfs/kubo:latest
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/ipfsdata
+    volumes:
+      - ./data/ipfs:/ipfsdata
+    ports:
+      - 4001:4001
+      - 8080:8080
+      - 8081:8081
+      - 5001:5001
+
+  db:
+    image: postgres:14
+    restart: always
+    container_name: 'postgres'
+    command: postgres -c 'max_connections=200'
+    environment:
+        POSTGRES_PASSWORD: ''
+        POSTGRES_USER: 'postgres'
+        POSTGRES_HOST_AUTH_METHOD: 'trust'
+    volumes:
+      - ./data/postql:/data/postql
+    ports:
+      - 7432:5432
